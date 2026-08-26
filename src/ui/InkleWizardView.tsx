@@ -173,10 +173,14 @@ export default function InkleWizardView() {
     loadFile(e.dataTransfer.files[0])
   }
 
+  const removeImage = () => {
+    setImage(null)
+    useAppStore.getState().setInkleSource(null)
+  }
+
   useEffect(() => {
     if (!image) {
       setQuantized(null)
-      useAppStore.getState().setInkleSource(null)
       return
     }
     const timer = setTimeout(() => {
@@ -309,7 +313,7 @@ export default function InkleWizardView() {
                     <Replace size={15} aria-hidden />
                     {t('inkle', 'replaceImage')}
                   </button>
-                  <button type="button" className="btn-ghost" onClick={() => setImage(null)}>
+                  <button type="button" className="btn-ghost" onClick={removeImage}>
                     <Trash2 size={15} aria-hidden />
                     {t('inkle', 'removeImage')}
                   </button>
