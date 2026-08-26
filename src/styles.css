@@ -96,6 +96,8 @@ body {
     width: 190mm;
     margin: 0 auto;
     padding: 8mm 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   @page {
