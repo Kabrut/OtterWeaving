@@ -11,6 +11,7 @@ import type { HexMatrix } from '../core/types'
 import { useAppStore } from '../state/store'
 import { t } from '../i18n/pl'
 import { InkleFabricCanvas } from './common/InkleFabricCanvas'
+import { PhotoEditor } from './common/PhotoEditor'
 
 function fmt(template: string, params: Record<string, string | number>): string {
   return template.replace(/\{(\w+)\}/g, (_, key: string) => String(params[key] ?? ''))
@@ -293,33 +294,42 @@ export default function InkleWizardView() {
               <span className="text-sm">{t('inkle', 'dropHint')}</span>
             </button>
           ) : (
-            <div className="mt-3 flex gap-3">
-              <img
-                src={image.url}
-                alt={image.fileName}
-                className="h-20 w-20 shrink-0 rounded-lg border border-stone-200 object-cover dark:border-stone-700"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{image.fileName}</p>
-                <p className="text-xs tabular-nums text-stone-500 dark:text-stone-400">
-                  {image.width} × {image.height} px
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Replace size={15} aria-hidden />
-                    {t('inkle', 'replaceImage')}
-                  </button>
-                  <button type="button" className="btn-ghost" onClick={removeImage}>
-                    <Trash2 size={15} aria-hidden />
-                    {t('inkle', 'removeImage')}
-                  </button>
+            <>
+              <div className="mt-3 flex gap-3">
+                <img
+                  src={image.url}
+                  alt={image.fileName}
+                  className="h-20 w-20 shrink-0 rounded-lg border border-stone-200 object-cover dark:border-stone-700"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{image.fileName}</p>
+                  <p className="text-xs tabular-nums text-stone-500 dark:text-stone-400">
+                    {image.width} × {image.height} px
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Replace size={15} aria-hidden />
+                      {t('inkle', 'replaceImage')}
+                    </button>
+                    <button type="button" className="btn-ghost" onClick={removeImage}>
+                      <Trash2 size={15} aria-hidden />
+                      {t('inkle', 'removeImage')}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+              <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-2 dark:border-stone-700 dark:bg-stone-800/50">
+                <PhotoEditor
+                  image={image}
+                  onChange={setImage}
+                  aspectHint={{ w: effThreads, h: effRows }}
+                />
+              </div>
+            </>
           )}
           {loadError && (
             <p className="mt-2 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">

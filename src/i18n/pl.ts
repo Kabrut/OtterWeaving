@@ -51,6 +51,12 @@ export const pl = {
     scratchName: 'Nowy wzór',
     defaultName: 'Wzór z obrazu',
     noImageHint: 'Wgraj obraz źródłowy albo zacznij od zera, aby wygenerować wzór.',
+    rotateLeft: 'Obróć w lewo',
+    rotateRight: 'Obróć w prawo',
+    cropApply: 'Utnij do zaznaczenia',
+    cropCancel: 'Anuluj zaznaczenie',
+    cropHint: 'Zaznacz obszar na zdjęciu przeciągnięciem',
+    aspectHint: 'Proporcje wzoru: {w} × {h}',
   },
   gallery: {
     title: 'Galeria wzorów',
