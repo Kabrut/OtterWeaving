@@ -296,6 +296,7 @@ export const pl = {
       'Podgląd zdjęcia, z którego wygenerowano wzór — punkt odniesienia przy poprawianiu podnoszeń.',
     showPhoto: 'Zdjęcie w tle',
     hidePhoto: 'Ukryj zdjęcie',
+    photoOpacity: 'Widoczność tła',
   },
   project: {
     saved: 'Zapisano',

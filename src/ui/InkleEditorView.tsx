@@ -50,10 +50,12 @@ function PickupBackdrop({
   matrix,
   cell,
   patternPairs,
+  opacity,
 }: {
   matrix: HexMatrix
   cell: number
   patternPairs: number
+  opacity: number
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
@@ -78,9 +80,10 @@ function PickupBackdrop({
     <canvas
       ref={ref}
       aria-hidden
-      className="pointer-events-none absolute opacity-40"
+      className="pointer-events-none absolute"
       style={{
         imageRendering: 'pixelated',
+        opacity: opacity / 100,
         left: `calc(2.5rem + ${cell * 2}px)`,
         top: '1rem',
       }}
@@ -178,6 +181,7 @@ export default function InkleEditorView() {
   const inkleSource = useAppStore((s) => s.inkleSource)
   const [cell, setCell] = useState(18)
   const [showPhoto, setShowPhoto] = useState(true)
+  const [photoOpacity, setPhotoOpacity] = useState(40)
   const paintRef = useRef<boolean | null>(null)
 
   const hexById = useMemo(
@@ -426,6 +430,25 @@ export default function InkleEditorView() {
           {backdropOn ? <EyeOff size={14} /> : <Eye size={14} />}
           {backdropOn ? t('inkle', 'hidePhoto') : t('inkle', 'showPhoto')}
         </button>
+        <label
+          className={`flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 ${
+            backdropOn ? '' : 'pointer-events-none opacity-40'
+          }`}
+          title={t('inkle', 'photoOpacity')}
+        >
+          <span className="hidden sm:inline">{t('inkle', 'photoOpacity')}</span>
+          <input
+            type="range"
+            min={5}
+            max={95}
+            step={5}
+            value={photoOpacity}
+            onChange={(e) => setPhotoOpacity(Number(e.target.value))}
+            className="h-1.5 w-24 cursor-pointer accent-otter-600"
+            aria-label={t('inkle', 'photoOpacity')}
+          />
+          <span className="w-8 tabular-nums">{photoOpacity}%</span>
+        </label>
       </div>
 
       <div className="flex items-start gap-4">
@@ -482,7 +505,12 @@ export default function InkleEditorView() {
               <div className="field-label mt-6">{t('inkle', 'pickup')}</div>
               <div className="relative w-fit">
                 {backdropOn && backdropMatrix && (
-                  <PickupBackdrop matrix={backdropMatrix} cell={cell} patternPairs={patternPairs} />
+                  <PickupBackdrop
+                    matrix={backdropMatrix}
+                    cell={cell}
+                    patternPairs={patternPairs}
+                    opacity={photoOpacity}
+                  />
                 )}
                 <div
                   className="relative z-10 grid w-fit"
