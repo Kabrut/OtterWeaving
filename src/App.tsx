@@ -130,7 +130,7 @@ export default function App() {
                   groupIndex > 0 ? ' border-l border-stone-200 pl-3 dark:border-stone-800' : ''
                 }`}
               >
-                <span className="hidden text-[10px] font-semibold tracking-wide text-stone-400 uppercase sm:block dark:text-stone-500">
+                <span className="text-[10px] font-semibold tracking-wide text-stone-400 uppercase dark:text-stone-500">
                   {group.label}
                 </span>
                 <div className="flex items-center gap-1">
