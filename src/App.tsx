@@ -109,8 +109,8 @@ export default function App() {
   return (
     <div className="flex min-h-full flex-col print:block">
       <header className="no-print sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-950/90">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5">
+          <div className="order-1 flex items-center gap-2">
             <Waves className="text-otter-600 dark:text-otter-400" size={22} aria-hidden />
             <div className="leading-tight">
               <div className="text-sm font-bold">{t('app', 'name')}</div>
@@ -119,11 +119,14 @@ export default function App() {
               </div>
             </div>
           </div>
-          <nav className="ml-auto flex items-center gap-3" aria-label="Sekcje aplikacji">
+          <nav
+            className="order-3 ml-auto flex min-w-0 basis-full flex-nowrap items-center gap-2 overflow-x-auto sm:gap-3 md:order-2 md:basis-auto"
+            aria-label="Sekcje aplikacji"
+          >
             {tabGroups.map((group, groupIndex) => (
               <div
                 key={group.label}
-                className={`flex flex-col gap-0.5${
+                className={`flex shrink-0 flex-col gap-0.5${
                   groupIndex > 0 ? ' border-l border-stone-200 pl-3 dark:border-stone-800' : ''
                 }`}
               >
@@ -137,7 +140,7 @@ export default function App() {
                       type="button"
                       disabled={!enabled}
                       onClick={() => setTab(id)}
-                      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                      className={`whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors sm:px-3 ${
                         tab === id
                           ? 'bg-otter-600 text-white'
                           : 'text-stone-600 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-stone-300 dark:hover:bg-stone-800'
@@ -151,7 +154,7 @@ export default function App() {
               </div>
             ))}
           </nav>
-          <div className="flex items-center gap-1 border-l border-stone-200 pl-2 dark:border-stone-800">
+          <div className="order-2 ml-auto flex items-center gap-1 border-l border-stone-200 pl-2 md:order-3 md:ml-0 dark:border-stone-800">
             {manualEdits && (
               <span
                 className="hidden items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 md:inline-flex dark:bg-amber-900/40 dark:text-amber-300"
