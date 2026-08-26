@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { Minus, Plus, Redo2, Undo2, ZoomIn, ZoomOut } from 'lucide-react'
+import { Eye, EyeOff, Minus, Plus, Redo2, Undo2, ZoomIn, ZoomOut } from 'lucide-react'
 import type { InklePass, InkleWarpThread } from '../core/inkle'
 import { computeInkleMetrics, validateInkleDraft } from '../core/inkle'
 import type { HexMatrix } from '../core/types'
@@ -46,6 +46,48 @@ function MatrixCanvas({
   )
 }
 
+function PickupBackdrop({
+  matrix,
+  cell,
+  patternPairs,
+}: {
+  matrix: HexMatrix
+  cell: number
+  patternPairs: number
+}) {
+  const ref = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const canvas = ref.current
+    if (!canvas) return
+    const h = matrix.length
+    const w = matrix[0]?.length ?? 0
+    if (w === 0 || h === 0 || patternPairs <= 0) return
+    const block = cell * 2
+    canvas.width = w * block
+    canvas.height = h * block
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        ctx.fillStyle = matrix[y][x]
+        ctx.fillRect(x * block, y * block, block, block)
+      }
+    }
+  }, [matrix, cell, patternPairs])
+  return (
+    <canvas
+      ref={ref}
+      aria-hidden
+      className="pointer-events-none absolute opacity-40"
+      style={{
+        imageRendering: 'pixelated',
+        left: `calc(2.5rem + ${cell * 2}px)`,
+        top: '1rem',
+      }}
+    />
+  )
+}
+
 interface InklePassRowProps {
   row: number
   up: boolean
@@ -53,6 +95,7 @@ interface InklePassRowProps {
   warp: InkleWarpThread[]
   hexById: Map<string, string>
   cell: number
+  translucent: boolean
   onCellDown: (row: number, col: number) => void
   onCellEnter: (row: number, col: number) => void
   onHeaderDown: (row: number) => void
@@ -65,6 +108,7 @@ const InklePassRow = memo(function InklePassRow({
   warp,
   hexById,
   cell,
+  translucent,
   onCellDown,
   onCellEnter,
   onHeaderDown,
@@ -86,6 +130,17 @@ const InklePassRow = memo(function InklePassRow({
       {picks.map((picked, col) => {
         const thread = warp[col]
         const visible = up ? thread.heddled : !thread.heddled
+        const bg = picked
+          ? translucent
+            ? 'bg-otter-100/70 dark:bg-otter-900/40'
+            : 'bg-otter-100 dark:bg-otter-900/50'
+          : visible
+            ? translucent
+              ? 'bg-stone-200/60 dark:bg-stone-700/60'
+              : 'bg-stone-200 dark:bg-stone-700'
+            : translucent
+              ? 'bg-white/60 dark:bg-stone-900/60'
+              : 'bg-white dark:bg-stone-900'
         return (
           <div
             key={col}
@@ -93,13 +148,7 @@ const InklePassRow = memo(function InklePassRow({
               if (e.button === 0) onCellDown(row, col)
             }}
             onMouseEnter={() => onCellEnter(row, col)}
-            className={`flex cursor-pointer items-center justify-center border border-stone-200 dark:border-stone-700 ${
-              picked
-                ? 'bg-otter-100 dark:bg-otter-900/50'
-                : visible
-                  ? 'bg-stone-200 dark:bg-stone-700'
-                  : 'bg-white dark:bg-stone-900'
-            }`}
+            className={`flex cursor-pointer items-center justify-center border border-stone-200 dark:border-stone-700 ${bg}`}
             style={{ width: cell, height: cell }}
           >
             {picked && (
@@ -128,6 +177,7 @@ export default function InkleEditorView() {
   const redoInkle = useAppStore((s) => s.redoInkle)
   const inkleSource = useAppStore((s) => s.inkleSource)
   const [cell, setCell] = useState(18)
+  const [showPhoto, setShowPhoto] = useState(true)
   const paintRef = useRef<boolean | null>(null)
 
   const hexById = useMemo(
@@ -254,6 +304,16 @@ export default function InkleEditorView() {
 
   const warpCount = draft?.warp.length ?? 0
   const passesCount = draft?.passes.length ?? 0
+  const patternPairs = Math.max(0, Math.floor((warpCount - 4) / 2))
+  const backdropMatrix = useMemo(() => {
+    const m = inkleSource?.matrix
+    if (!draft || !m || m.length === 0 || patternPairs <= 0) return null
+    const cols = Math.min(m[0]?.length ?? 0, patternPairs)
+    const rows = Math.min(m.length, Math.floor(draft.passes.length / 2))
+    if (cols <= 0 || rows <= 0) return null
+    return m.slice(0, rows).map((row) => row.slice(0, cols))
+  }, [draft, inkleSource, patternPairs])
+  const backdropOn = showPhoto && backdropMatrix !== null
 
   return (
     <div className="no-print flex flex-col gap-4">
@@ -356,6 +416,16 @@ export default function InkleEditorView() {
         >
           <ZoomIn size={16} />
         </button>
+        <span className="mx-1 h-5 w-px bg-stone-200 dark:bg-stone-700" />
+        <button
+          type="button"
+          className="btn-secondary px-2 py-1 text-xs"
+          disabled={!backdropMatrix}
+          onClick={() => setShowPhoto((v) => !v)}
+        >
+          {backdropOn ? <EyeOff size={14} /> : <Eye size={14} />}
+          {backdropOn ? t('inkle', 'hidePhoto') : t('inkle', 'showPhoto')}
+        </button>
       </div>
 
       <div className="flex items-start gap-4">
@@ -410,33 +480,39 @@ export default function InkleEditorView() {
               </div>
 
               <div className="field-label mt-6">{t('inkle', 'pickup')}</div>
-              <div
-                className="grid w-fit"
-                style={{ gridTemplateColumns: `2.5rem repeat(${warpCount}, ${cell}px)` }}
-              >
-                <div />
-                {draft.warp.map((_, x) => (
-                  <div
-                    key={x}
-                    className="text-center text-[10px] tabular-nums text-stone-500 dark:text-stone-400"
-                  >
-                    {x + 1}
-                  </div>
-                ))}
-                {draft.passes.map((pass: InklePass, y) => (
-                  <InklePassRow
-                    key={y}
-                    row={y}
-                    up={pass.up}
-                    picks={pass.picks}
-                    warp={draft.warp}
-                    hexById={hexById}
-                    cell={cell}
-                    onCellDown={onCellDown}
-                    onCellEnter={onCellEnter}
-                    onHeaderDown={onHeaderDown}
-                  />
-                ))}
+              <div className="relative w-fit">
+                {backdropOn && backdropMatrix && (
+                  <PickupBackdrop matrix={backdropMatrix} cell={cell} patternPairs={patternPairs} />
+                )}
+                <div
+                  className="relative z-10 grid w-fit"
+                  style={{ gridTemplateColumns: `2.5rem repeat(${warpCount}, ${cell}px)` }}
+                >
+                  <div className="h-4" />
+                  {draft.warp.map((_, x) => (
+                    <div
+                      key={x}
+                      className="h-4 text-center text-[10px] leading-none tabular-nums text-stone-500 dark:text-stone-400"
+                    >
+                      {x + 1}
+                    </div>
+                  ))}
+                  {draft.passes.map((pass: InklePass, y) => (
+                    <InklePassRow
+                      key={y}
+                      row={y}
+                      up={pass.up}
+                      picks={pass.picks}
+                      warp={draft.warp}
+                      hexById={hexById}
+                      cell={cell}
+                      translucent={backdropOn}
+                      onCellDown={onCellDown}
+                      onCellEnter={onCellEnter}
+                      onHeaderDown={onHeaderDown}
+                    />
+                  ))}
+                </div>
               </div>
               <p className="mt-3 text-[11px] leading-snug text-stone-500 dark:text-stone-400">
                 {t('inkle', 'hintPaint')}

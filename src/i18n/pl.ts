@@ -294,6 +294,8 @@ export const pl = {
     sourceImage: 'Zdjęcie źródłowe',
     sourceHint:
       'Podgląd zdjęcia, z którego wygenerowano wzór — punkt odniesienia przy poprawianiu podnoszeń.',
+    showPhoto: 'Zdjęcie w tle',
+    hidePhoto: 'Ukryj zdjęcie',
   },
   project: {
     saved: 'Zapisano',
